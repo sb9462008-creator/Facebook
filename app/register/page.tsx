@@ -1,14 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { registerAction } from "@/lib/actions";
 import Link from "next/link";
+import { isRedirectError } from "next/dist/client/components/redirect-error";
 
 export default function RegisterPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -18,9 +17,8 @@ export default function RegisterPage() {
       const fd = new FormData(e.currentTarget);
       await registerAction(fd);
     } catch (err: unknown) {
-      if (err instanceof Error && !err.message.includes("NEXT_REDIRECT")) {
-        setError(err.message);
-      }
+      if (isRedirectError(err)) return; // redirect — ignore
+      setError(err instanceof Error ? err.message : "Алдаа гарлаа");
     } finally {
       setLoading(false);
     }

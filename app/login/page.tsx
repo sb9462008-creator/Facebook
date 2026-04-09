@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { loginAction } from "@/lib/actions";
 import Link from "next/link";
+import { isRedirectError } from "next/dist/client/components/redirect-error";
 
 export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
@@ -16,9 +17,8 @@ export default function LoginPage() {
       const fd = new FormData(e.currentTarget);
       await loginAction(fd);
     } catch (err: unknown) {
-      if (err instanceof Error && !err.message.includes("NEXT_REDIRECT")) {
-        setError(err.message);
-      }
+      if (isRedirectError(err)) return;
+      setError(err instanceof Error ? err.message : "Алдаа гарлаа");
     } finally {
       setLoading(false);
     }
