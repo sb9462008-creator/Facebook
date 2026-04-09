@@ -38,20 +38,20 @@ export type User = {
 // ─── Users ───────────────────────────────────────────────
 export async function createUser(username: string, password: string): Promise<User | null> {
   const db = getSupabase();
-  const { data: existing } = await db.from("users").select("id").eq("username", username).single();
+  const { data: existing } = await db.from("users").select("id").eq("username", username).maybeSingle();
   if (existing) return null;
   const { data, error } = await db.from("users").insert({ username, password }).select().single();
-  if (error) return null;
+  if (error) throw new Error(error.message);
   return data;
 }
 
 export async function findUser(username: string, password: string): Promise<User | null> {
-  const { data } = await getSupabase().from("users").select().eq("username", username).eq("password", password).single();
+  const { data } = await getSupabase().from("users").select().eq("username", username).eq("password", password).maybeSingle();
   return data ?? null;
 }
 
 export async function getUserById(id: string): Promise<User | null> {
-  const { data } = await getSupabase().from("users").select().eq("id", id).single();
+  const { data } = await getSupabase().from("users").select().eq("id", id).maybeSingle();
   return data ?? null;
 }
 
@@ -78,7 +78,7 @@ export async function getPopularPosts(): Promise<Post[]> {
 
 export async function getPostById(id: string, viewerId?: string): Promise<Post | undefined> {
   const db = getSupabase();
-  const { data: post } = await db.from("posts").select().eq("id", id).single();
+  const { data: post } = await db.from("posts").select().eq("id", id).maybeSingle();
   if (!post) return undefined;
   if (viewerId && !post.viewed_by.includes(viewerId)) {
     const newViewedBy = [...post.viewed_by, viewerId];
